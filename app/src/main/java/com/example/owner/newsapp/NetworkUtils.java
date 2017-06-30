@@ -64,21 +64,19 @@ public class NetworkUtils {
     public static ArrayList<NewsItem> parseJSON(String json) throws JSONException {
         ArrayList<NewsItem> result = new ArrayList<>();
         JSONObject main = new JSONObject(json);
-        JSONArray items = main.getJSONArray("items");
-
-        for (int i = 0; i < items.length(); i++) {
-            JSONObject item = items.getJSONObject(i);
-            String name = item.getString("author");
-            JSONObject owner = item.getJSONObject("owner");
-            String ownerName = owner.getString("title");
-            String url = item.getString("url");
-            String descript = item.getString("description");
-            String url1 = item.getString("urlToImage");
-            String publish = item.getString("publishedAt");
-            NewsItem news = new NewsItem(name, ownerName, url, descript, url1, publish);
-            result.add(news);
+        JSONArray articles = main.getJSONArray("articles");
+        for (int i = 0; i < articles.length(); i++) {
+            JSONObject article = articles.getJSONObject(i);
+            String author = article.getString("author");
+            String title = article.getString("title");
+            String description = article.getString("description");
+            String url = article.getString("url");
+            String urlToImage = article.getString("urlToImage");
+            String publishedAt = article.getString("publishedAt");
+            NewsItem item = new NewsItem(author, title, description, url, urlToImage, publishedAt);
+            result.add(item);
         }
         return result;
+        }
 
     }
-}

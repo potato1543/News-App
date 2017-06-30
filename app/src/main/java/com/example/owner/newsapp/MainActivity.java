@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -23,30 +24,22 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    // private EditText search;
-    static final String TAG = "MainActivity";
+    static final String TAG = "mainactivity";
     private ProgressBar progress;
-    private RecyclerView mRecyclerView;
-    private NewsAdapter mNewsAdapter;
-    private TextView textView;
+    private EditText search;
+    private RecyclerView rv;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_news);
         progress = (ProgressBar) findViewById(R.id.progressBar);
-        textView = (TextView) findViewById(R.id.news_results);
+        search = (EditText) findViewById(R.id.searchQuery);
+        rv = (RecyclerView)findViewById(R.id.recyclerview_news);
 
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-       // mNewsAdapter = new NewsAdapter();
-
-      //  LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-       // mRecyclerView.setLayoutManager(layoutManager);
-       // mRecyclerView.setHasFixedSize(true);
-       // mRecyclerView.setAdapter(mNewsAdapter);
+        rv.setLayoutManager(new LinearLayoutManager(this));
 
     }
 
@@ -58,27 +51,21 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        NewsTask net = null;
-        switch (item.getItemId()) {
-            case R.id.news_results:
-                Log.i("Menu", "Refresh clicked");
-                net = new NewsTask(""); // no query string, will refresh page
-                net.execute();
-                return true;
-            case R.id.search:
-                Log.i("Menu", "Search clicked");
-                net = new NewsTask("bf84b88bcd544f8094c1083036bffaae"); // news api key as query string
-                net.execute();
-                return true;
+        int itemNumber = item.getItemId();
+
+        if (itemNumber == R.id.search) {
+            String s = search.getText().toString();
+            NetworkTask task = new NetworkTask(s);
+            task.execute();
         }
-        return super.onOptionsItemSelected(item);
+
+        return true;
     }
 
-
-    public class NewsTask extends AsyncTask<URL, Void, ArrayList<NewsItem>> {
+    class NetworkTask extends AsyncTask<URL, Void, ArrayList<NewsItem>> {
         String query;
 
-        NewsTask(String s) {
+        NetworkTask(String s) {
             query = s;
         }
 
@@ -86,17 +73,20 @@ public class MainActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progress.setVisibility(View.VISIBLE);
+
         }
 
         @Override
         protected ArrayList<NewsItem> doInBackground(URL... params) {
-            URL url = NetworkUtils.makeURL(query, "stars");
             ArrayList<NewsItem> result = null;
+            URL url = NetworkUtils.makeURL(query, "stars");
             Log.d(TAG, "url: " + url.toString());
             try {
                 String json = NetworkUtils.getResponseFromHttpUrl(url);
                 result = NetworkUtils.parseJSON(json);
-            } catch (IOException | JSONException e) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
             return result;
@@ -107,16 +97,17 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(data);
             progress.setVisibility(View.GONE);
             if (data != null) {
-                NewsAdapter adapter = new NewsAdapter(data, new NewsAdapter.ItemClickListener(){
+                NewsAdapter adapter = new NewsAdapter(data, new NewsAdapter.ItemClickListener() {
                     @Override
-                    public void onItemClick(int clickedItemIndex){ // add code here to finish
+                    public void onItemClick(int clickedItemIndex) {
                         String url = data.get(clickedItemIndex).getUrl();
                         Log.d(TAG, String.format("Url %s", url));
                     }
                 });
-                mRecyclerView.setAdapter(adapter);
+                rv.setAdapter(adapter);
 
             }
         }
     }
+
 }

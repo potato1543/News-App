@@ -2,6 +2,7 @@ package com.example.owner.newsapp;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.test.suitebuilder.TestMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,34 +18,29 @@ import java.util.ArrayList;
 
 public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsAdapterViewHolder> {
 
-    private String mNewsData[];
-
-    private static ArrayList<NewsItem> data;
-    static ItemClickListener listener;
+    private ArrayList<NewsItem> data;
+    ItemClickListener listener;
 
 
-
-    public NewsAdapter(ArrayList<NewsItem> data, ItemClickListener listener){
+    public NewsAdapter(ArrayList<NewsItem> data, ItemClickListener listener) {
         this.data = data;
         this.listener = listener;
     }
 
-    public interface ItemClickListener{
+    public interface ItemClickListener {
         void onItemClick(int clickedItemIndex);
-    }
-
-    public NewsAdapter() {
-
     }
 
     @Override
     public NewsAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
-        int layoutIdForListWeather = R.layout.activity_list_item;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
-        View view = inflater.inflate(layoutIdForListWeather, parent, shouldAttachToParentImmediately);
-        return new NewsAdapterViewHolder(view);
+
+        View view = inflater.inflate(R.layout.activity_list_item, parent, shouldAttachToParentImmediately);
+        NewsAdapterViewHolder holder = new NewsAdapterViewHolder(view);
+
+        return holder;
     }
 
     @Override
@@ -54,30 +50,27 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsAdapterVie
 
     @Override
     public int getItemCount() {
-        if (null == mNewsData) return 0;
-        return mNewsData.length;
+        return data.size();
     }
 
-
-    public static class NewsAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-         TextView mNewsTextView;
-         TextView mNewsTextView1;
+    class NewsAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView title;
+        TextView description;
         TextView date;
 
-
-        public NewsAdapterViewHolder(View itemView) {
-            super(itemView);
-            mNewsTextView = (TextView) itemView.findViewById(R.id.description);
-            mNewsTextView1 = (TextView) itemView.findViewById(R.id.title);
-            date = (TextView)itemView.findViewById(R.id.time);
-            itemView.setOnClickListener(this);
+        NewsAdapterViewHolder(View view) {
+            super(view);
+            title = (TextView) view.findViewById(R.id.title);
+            description = (TextView) view.findViewById(R.id.description);
+            date = (TextView) view.findViewById(R.id.time);
+            view.setOnClickListener(this);
         }
 
-        public void bind(int pos){
-            NewsItem repo = data.get(pos);
-            mNewsTextView.setText(repo.getTitle());
-            mNewsTextView1.setText(repo.getDescription());
-            date.setText(repo.getPublishedAt());
+        public void bind(int pos) {
+            NewsItem news = data.get(pos);
+            title.setText(news.getTitle());
+            description.setText(news.getDescription());
+            date.setText(news.getPublishedAt());
         }
 
         @Override
@@ -86,5 +79,4 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsAdapterVie
             listener.onItemClick(pos);
         }
     }
-
 }
