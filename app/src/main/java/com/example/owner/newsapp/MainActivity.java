@@ -1,8 +1,10 @@
 package com.example.owner.newsapp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -11,36 +13,35 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.example.owner.newsapp.model.NewsItem;
 
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
-
-    static final String TAG = "mainactivity";
-    private ProgressBar progress;
+public class MainActivity extends AppCompatActivity implements GithubAdapter.ItemClickListener {
+    static final String TAG = "MainActivity";
     private EditText search;
+    private ProgressBar progress;
     private RecyclerView rv;
-
+    private GithubAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        progress = (ProgressBar) findViewById(R.id.progressBar);
         search = (EditText) findViewById(R.id.searchQuery);
-        rv = (RecyclerView)findViewById(R.id.recyclerview_news);
+        progress = (ProgressBar) findViewById(R.id.progressBar);
 
+        GithubAdapter.ItemClickListener adapters = this;
+        adapter = new GithubAdapter(adapters);
+
+        rv = (RecyclerView) findViewById(R.id.recyclerview_news);
         rv.setLayoutManager(new LinearLayoutManager(this));
-
     }
 
     @Override
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         int itemNumber = item.getItemId();
 
         if (itemNumber == R.id.search) {
@@ -58,11 +60,21 @@ public class MainActivity extends AppCompatActivity {
             NetworkTask task = new NetworkTask(s);
             task.execute();
         }
-
         return true;
+
+    }
+
+    @Override
+    public void onClick(NewsItem newsItem) {
+        Uri webpage = Uri.parse(newsItem.getUrl());
+        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     class NetworkTask extends AsyncTask<URL, Void, ArrayList<NewsItem>> {
+
         String query;
 
         NetworkTask(String s) {
@@ -76,11 +88,13 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+
         @Override
         protected ArrayList<NewsItem> doInBackground(URL... params) {
             ArrayList<NewsItem> result = null;
-            URL url = NetworkUtils.makeURL(query, "stars");
-            Log.d(TAG, "url: " + url.toString());
+            //  URL url = NetworkUtils.buildUrl(query, "stars");
+            URL url = NetworkUtils.buildUrl("the-next-web", "latest", "bf84b88bcd544f8094c1083036bffaae");
+            Log.d(TAG, "Starturl: " + url.toString());
             try {
                 String json = NetworkUtils.getResponseFromHttpUrl(url);
                 result = NetworkUtils.parseJSON(json);
@@ -97,17 +111,13 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(data);
             progress.setVisibility(View.GONE);
             if (data != null) {
-                NewsAdapter adapter = new NewsAdapter(data, new NewsAdapter.ItemClickListener() {
-                    @Override
-                    public void onItemClick(int clickedItemIndex) {
-                        String url = data.get(clickedItemIndex).getUrl();
-                        Log.d(TAG, String.format("Url %s", url));
-                    }
-                });
-                rv.setAdapter(adapter);
+               rv.setAdapter(adapter);
+                adapter.setData(data);
+            } else {
 
+                Log.d(TAG, "no data");
             }
+
         }
     }
-
 }

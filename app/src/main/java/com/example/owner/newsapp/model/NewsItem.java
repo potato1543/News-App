@@ -1,21 +1,19 @@
 package com.example.owner.newsapp.model;
 
-import com.example.owner.newsapp.MainActivity;
-
 /**
  * Created by Owner on 6/29/2017.
  */
 
-public class NewsItem{
+public class NewsItem {
 
-    String author;
-    String title;
-    String url;
-    String description;
-    String urlToImage;
-    String publishedAt;
+    private String author;
+    private String title;
+    private String description;
+    private String url;
+    private String urlToImage;
+    private String publishedAt;
 
-    public NewsItem(String author, String title, String url, String description, String urlToImage, String publishedAt){
+    public NewsItem(String author, String title,String description, String url, String urlToImage, String publishedAt) {
         this.author = author;
         this.title = title;
         this.description = description;
